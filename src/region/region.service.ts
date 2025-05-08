@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RegionQueryDto } from './dto/create-region.dto copy';
 
 @Injectable()
 export class RegionService {
@@ -30,12 +31,44 @@ export class RegionService {
     }
   }
 
-  async findAll() {
+  async findAll(query: RegionQueryDto) {
     try {
-      const one = await this.prisma.region.findMany();
-      return one;
+      const { name, page = 1, limit = 10, sort = 'asc' } = query;
+
+      const skip = (Number(page) - 1) * Number(limit);
+
+      const where: any = {};
+      if (name) {
+        where.name = {
+          contains: name,
+          mode: 'insensitive',
+        };
+      }
+
+      const orderBy: any = {};
+      if (sort && sort.toLowerCase() === 'desc') {
+        orderBy.name = 'desc';
+      } else {
+        orderBy.name = 'asc';
+      }
+
+      const data = await this.prisma.region.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy,
+      });
+
+      const total = await this.prisma.region.count({ where });
+
+      return {
+        data,
+        total,
+        page: Number(page),
+        totalPages: Math.ceil(total / Number(limit)),
+      };
     } catch (error) {
-      throw new BadRequestException('Region findall error');
+      throw new BadRequestException('Region findAll error');
     }
   }
 

@@ -6,6 +6,8 @@ import {
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GetProductQueryDto } from './dto/create-product.dto copy';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class ProductService {
@@ -32,13 +34,83 @@ export class ProductService {
       throw new InternalServerErrorException('Failed to create product');
     }
   }
+  async exportToExcel() {
+    const products = await this.prisma.product.findMany({
+      include: {
+        Category: true,
+        Restaurant: true,
+      },
+    });
 
-  async findAll() {
-    try {
-      return await this.prisma.product.findMany();
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to get products');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Products');
+
+    worksheet.columns = [
+      { header: 'ID', key: 'id', width: 10 },
+      { header: 'Name', key: 'name', width: 25 },
+      { header: 'Price', key: 'price', width: 15 },
+      { header: 'Is Active', key: 'isActive', width: 12 },
+      { header: 'Category', key: 'categoryName', width: 20 },
+      { header: 'Restaurant', key: 'restaurantName', width: 25 },
+      { header: 'Created At', key: 'createdAt', width: 20 },
+    ];
+
+    products.forEach((product) => {
+      worksheet.addRow({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        isActive: product.isActive ? 'Yes' : 'No',
+        categoryName: product.categoryId || 'No Category',
+        restaurantName: product.restaurantId || 'No Restaurant',
+      });
+    });
+
+    return await workbook.xlsx.writeBuffer();
+  }
+
+  async findAll(query: GetProductQueryDto) {
+    const {
+      name,
+      categoryId,
+      isActive,
+      restaurantId,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      page = 1,
+      limit = 10,
+    } = query;
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+
+    const where: any = {};
+    if (name) where.name = { contains: name, mode: 'insensitive' };
+
+    if (categoryId) where.categoryId = Number(categoryId);
+
+    if (isActive === 'true') {
+      where.isActive = true;
+    } else if (isActive === 'false') {
+      where.isActive = false;
     }
+
+    if (restaurantId) where.restaurantId = Number(restaurantId);
+
+    const products = await this.prisma.product.findMany({
+      where,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (pageNumber - 1) * limit,
+      take: limitNumber,
+    });
+
+    const total = await this.prisma.product.count({ where });
+
+    return {
+      data: products,
+      total,
+      pageNumber,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number) {

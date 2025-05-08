@@ -30,6 +30,7 @@ export class CreateRestaurantDto {
   })
   phone: string;
   @IsNumber()
+  @IsPositive()
   @ApiProperty({
     example: 10,
     description: 'Tip percentage or fixed amount for the restaurant',
