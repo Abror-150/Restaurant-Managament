@@ -6,6 +6,7 @@ import { RegionModule } from './region/region.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { CategoryModule } from './category/category.module';
 import { UserModule } from './user/user.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserModule } from './user/user.module';
     RestaurantModule,
     CategoryModule,
     UserModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

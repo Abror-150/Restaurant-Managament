@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CreateRestaurantDto {
   @IsString()
@@ -33,7 +39,7 @@ export class CreateRestaurantDto {
   @ApiProperty({ example: true, description: 'Restaurant activity status' })
   isActive: boolean;
   @IsNumber()
-  @IsNotEmpty()
+  @IsPositive()
   @ApiProperty({
     example: 1,
     description: 'Region ID where the restaurant is located',
