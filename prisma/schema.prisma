@@ -12,3 +12,140 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id       Int      @id @default(autoincrement())
+  name     String
+  password String
+  phone    String
+  role     UserRole
+  balance  Int      @default(0)
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+
+  orders Order[]
+
+  withdraws Withdraw[]
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  OWNER
+  CASSER
+  WAITER
+}
+
+model Restaurant {
+  id       Int     @id @default(autoincrement())
+  name     String
+  address  String
+  phone    String
+  tip      Int
+  isActive Boolean
+
+  users User[]
+
+  Region   Region @relation(fields: [regionId], references: [id])
+  regionId Int
+
+  categories Category[]
+
+  products Product[]
+
+  orders Order[]
+
+  debts Debt[]
+}
+
+model Region {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  restaurants Restaurant[]
+}
+
+model Category {
+  id       Int     @id @default(autoincrement())
+  name     String
+  isActive Boolean
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+
+  products Product[]
+}
+
+model Product {
+  id       Int     @id @default(autoincrement())
+  name     String
+  isActive Boolean
+  price    Int
+
+  Category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+
+  orderItems OrderItems[]
+}
+
+model Order {
+  id    Int @id @default(autoincrement())
+  table Int
+  total Int
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+
+  User   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  orderItems OrderItems[]
+}
+
+model OrderItems {
+  id Int @id @default(autoincrement())
+
+  Order   Order @relation(fields: [orderId], references: [id])
+  orderId Int
+
+  
+  quantity  Int
+  
+  Product   Product @relation(fields: [productId], references: [id])
+  productId Int
+}
+
+model Debt {
+  id      Int        @id @default(autoincrement())
+  orderId Int
+  amount  Int
+  client  String
+  status  DebtStatus
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+}
+
+enum DebtStatus {
+  PENDING
+  PAID
+}
+
+model Withdraw {
+  id     Int @id @default(autoincrement())
+  amount Int
+
+  User   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  status WithdrawStatus
+}
+
+enum WithdrawStatus {
+  INCOME
+  OUTCOME
+}
