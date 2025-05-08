@@ -14,9 +14,13 @@ export class RegionService {
 
   async create(data: CreateRegionDto) {
     try {
+      if (!data.name) {
+        return { message: 'Please write region name' };
+      }
+
       const existRegion = await this.regionFinder(data.name);
       if (existRegion) {
-        throw new BadRequestException('This Region exists');
+        return { message: 'This Region exists' };
       }
 
       const one = await this.prisma.region.create({ data });
@@ -46,6 +50,9 @@ export class RegionService {
 
   async update(id: number, data: UpdateRegionDto) {
     try {
+      if (!data.name) {
+        return { message: 'Please write region name' };
+      }
       const one = await this.prisma.region.update({ where: { id }, data });
       return one;
     } catch (error) {
