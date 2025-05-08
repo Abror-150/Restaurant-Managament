@@ -12,6 +12,8 @@ async function bootstrap() {
     .setTitle('Restaurant Management ')
     .setDescription('The Restaurant Management API description')
     .setVersion('1.0')
+    .addSecurityRequirements('bearer', ['bearer'])
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
