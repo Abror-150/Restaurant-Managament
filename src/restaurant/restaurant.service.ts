@@ -18,13 +18,13 @@ export class RestaurantService {
         where: { name: data.name },
       });
       if (res) {
-        throw new BadRequestException('restaurant already exists');
+        return { message: 'restaurant already exists' };
       }
       let region = await this.prisma.region.findFirst({
         where: { id: data.regionId },
       });
       if (!region) {
-        throw new NotFoundException('region not found');
+        return { message: 'region not found' };
       }
 
       return await this.prisma.restaurant.create({
