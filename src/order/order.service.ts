@@ -8,9 +8,14 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { filterOrderDto } from './dto/create-orderItems.dto copy 2';
 import * as ExcelJS from 'exceljs';
+import axios from 'axios';
 @Injectable()
 export class OrderService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private readonly telegramBotToken = '8011446307:AAHcBEMLO6KxT8pQ4tcyzvlysWwSrIziG7A';
+  private readonly telegramChatId = '1071853006'
+
   async create(data: CreateOrderDto, userId: number) {
     try {
       const productIds = data.orderItems.map((item) => item.productId);
@@ -73,6 +78,8 @@ export class OrderService {
         },
       });
 
+      await this.sendTelegramMessage(`New Order Created: ${created.id}\nDetails: ${JSON.stringify(created)}`);
+
       return created;
     } catch (error) {
       console.error(error);
@@ -81,6 +88,18 @@ export class OrderService {
       );
     }
   }
+  private async sendTelegramMessage(message: string) {
+    try {
+      const url = `https://api.telegram.org/bot${this.telegramBotToken}/sendMessage`;
+      await axios.post(url, {
+        chat_id: this.telegramChatId,
+        text: message,
+      });
+    } catch (error) {
+      console.error('Error sending message to Telegram bot', error);
+    }
+  }
+
   async exportToExcel() {
     const orders = await this.prisma.order.findMany({
       include: {
