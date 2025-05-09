@@ -57,6 +57,8 @@ model Restaurant {
   orders Order[]
 
   debts Debt[]
+
+  withdraws Withdraw[]
 }
 
 model Region {
@@ -93,9 +95,9 @@ model Product {
 }
 
 model Order {
-  id    Int @id @default(autoincrement())
-  table String
-  total Int
+  id     Int         @id @default(autoincrement())
+  table  String
+  total  Int
   status OrderStatus @default(PENDING)
 
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
@@ -106,9 +108,10 @@ model Order {
 
   orderItems OrderItems[]
 }
-enum OrderStatus{
- PENDING
- PAID
+
+enum OrderStatus {
+  PENDING
+  PAID
 }
 
 model OrderItems {
@@ -117,8 +120,7 @@ model OrderItems {
   Order   Order @relation(fields: [orderId], references: [id])
   orderId Int
 
-  
-  quantity  Int
+  quantity Int
 
   Product   Product @relation(fields: [productId], references: [id])
   productId Int
@@ -148,13 +150,12 @@ model Withdraw {
   userId Int
 
   status WithdrawStatus
+
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
 }
 
 enum WithdrawStatus {
   INCOME
   OUTCOME
 }
-
-
-
-
