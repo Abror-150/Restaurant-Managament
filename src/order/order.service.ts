@@ -81,6 +81,35 @@ export class OrderService {
       );
     }
   }
+  async exportToExcel() {
+    const orders = await this.prisma.order.findMany({
+      include: {
+        User: true,
+        orderItems: {
+          include: { Product: true },
+        },
+      },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Orders');
+
+    worksheet.columns = [
+      { header: 'Order ID', key: 'id', width: 10 },
+      { header: 'Restaurant id', key: 'restaurantId', width: 25 },
+      { header: 'User id', key: 'userId', width: 15 },
+    ];
+
+    orders.forEach((order) => {
+      worksheet.addRow({
+        id: order.id,
+        userId: order.userId,
+        restaurantId: order.restaurantId,
+      });
+    });
+
+    return await workbook.xlsx.writeBuffer();
+  }
 
   async findAll(query: filterOrderDto) {
     const { table, restaurantId, status, page = 1, limit = 10 } = query;
@@ -106,6 +135,43 @@ export class OrderService {
       pageNumber,
       totalPages: Math.ceil(total / limit),
     };
+  }
+  async waiterOrderStats() {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ['userId'],
+        _count: {
+          id: true,
+        },
+        _avg: {
+          total: true,
+        },
+        orderBy: {
+          _count: {
+            id: 'desc',
+          },
+        },
+      });
+
+      const result = await Promise.all(
+        stats.map(async (item) => {
+          const waiter = await this.prisma.user.findUnique({
+            where: { id: item.userId },
+            select: { id: true, name: true, phone: true },
+          });
+
+          return {
+            waiter,
+            totalOrders: item._count.id,
+            averageOrderPrice: item._avg.total,
+          };
+        }),
+      );
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Waiter order stats error');
+    }
   }
 
   async findOne(id: number) {
@@ -159,34 +225,5 @@ export class OrderService {
     } catch (error) {
       throw new InternalServerErrorException('internal server error');
     }
-  }
-  async exportToExcel() {
-    const orders = await this.prisma.order.findMany({
-      include: {
-        User: true,
-        orderItems: {
-          include: { Product: true },
-        },
-      },
-    });
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Orders');
-
-    worksheet.columns = [
-      { header: 'Order ID', key: 'id', width: 10 },
-      { header: 'Restaurant id', key: 'restaurantId', width: 25 },
-      { header: 'User id', key: 'userId', width: 15 },
-    ];
-
-    orders.forEach((order) => {
-      worksheet.addRow({
-        id: order.id,
-        userId: order.userId,
-        restaurantId: order.restaurantId,
-      });
-    });
-
-    return await workbook.xlsx.writeBuffer();
   }
 }

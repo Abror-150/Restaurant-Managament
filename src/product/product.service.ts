@@ -112,6 +112,36 @@ export class ProductService {
       totalPages: Math.ceil(total / limit),
     };
   }
+  async getTopProductsByRestaurant(restaurantId: number) {
+    try {
+      const result = await this.prisma.product.findMany({
+        where: { restaurantId },
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: {
+              orderItems: true,
+            },
+          },
+        },
+        orderBy: {
+          orderItems: {
+            _count: 'desc',
+          },
+        },
+        take: 10,
+      });
+
+      return result.map((product) => ({
+        productId: product.id,
+        name: product.name,
+        soldCount: product._count.orderItems,
+      }));
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching top products');
+    }
+  }
 
   async findOne(id: number) {
     try {

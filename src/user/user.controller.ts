@@ -10,6 +10,7 @@ import {
   RawBody,
   Req,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -79,6 +80,16 @@ export class UserController {
   })
   findAll(@Query() query: any) {
     return this.userService.findAll(query);
+  }
+  @Get('top-earners')
+  async getTopWaiters(
+    @Query('restaurantId', ParseIntPipe) restaurantId: number,
+  ) {
+    return this.userService.getTopWaiters(restaurantId);
+  }
+  @Get('waiter-stats')
+  async getWaiterStats() {
+    return await this.userService.waiterOrderStats();
   }
 
   @Get(':id')

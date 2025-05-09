@@ -126,6 +126,79 @@ export class UserService {
       throw new BadRequestException('User findAll error');
     }
   }
+  async getTopWaiters(restaurantId: number) {
+    try {
+      const topWaiters = await this.prisma.order.groupBy({
+        by: ['userId'],
+        where: { restaurantId },
+        _sum: {
+          total: true,
+        },
+        orderBy: {
+          _sum: {
+            total: 'desc',
+          },
+        },
+        take: 10,
+      });
+
+      const waiterIds = topWaiters.map((w) => w.userId);
+
+      const waiters = await this.prisma.user.findMany({
+        where: {
+          id: { in: waiterIds },
+        },
+      });
+
+      return topWaiters.map((tw) => {
+        const waiter = waiters.find((w) => w.id === tw.userId);
+        return {
+          waiter,
+          totalEarned: tw._sum.total,
+        };
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get top waiters');
+    }
+  }
+
+  async waiterOrderStats() {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ['userId'],
+        _count: {
+          id: true,
+        },
+        _avg: {
+          total: true,
+        },
+        orderBy: {
+          _count: {
+            id: 'desc',
+          },
+        },
+      });
+
+      const result = await Promise.all(
+        stats.map(async (item) => {
+          const waiter = await this.prisma.user.findUnique({
+            where: { id: item.userId },
+            select: { id: true, name: true, phone: true },
+          });
+
+          return {
+            waiter,
+            totalOrders: item._count.id,
+            averageOrderPrice: item._avg.total,
+          };
+        }),
+      );
+
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Waiter order stats error');
+    }
+  }
 
   async findOne(id: number) {
     try {

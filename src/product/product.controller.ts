@@ -9,6 +9,7 @@ import {
   Query,
   Res,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -36,6 +37,13 @@ export class ProductController {
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
+  }
+
+  @Get('top-products/:restaurantId')
+  async getTopProducts(
+    @Param('restaurantId', ParseIntPipe) restaurantId: number,
+  ) {
+    return this.productService.getTopProductsByRestaurant(restaurantId);
   }
 
   @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.SUPER_ADMIN, UserRole.CASSER)
