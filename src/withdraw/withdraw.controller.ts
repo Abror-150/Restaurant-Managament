@@ -34,7 +34,6 @@ export class WithdrawController {
   @UseGuards(AuthGuard)
   @Get()
   @ApiQuery({ name: 'amount', required: false, type: Number })
-  @ApiQuery({ name: 'userId', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, enum: WithdrawStatus })
   @ApiQuery({ name: 'restaurantId', required: false, type: Number })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })

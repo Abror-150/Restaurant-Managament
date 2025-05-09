@@ -14,7 +14,6 @@ export class WithdrawService {
 
   async create(data: CreateWithdrawDto) {
     try {
-
       const existRestaurant = await this.prisma.restaurant.findFirst({
         where: { id: data.restaurantId },
       });
@@ -51,20 +50,14 @@ export class WithdrawService {
 
   async findAll(query: filterWithdrawDto) {
     try {
-      const {
-        restaurantId,
-        status,
-        amount,
-        page = 1,
-        limit = 10,
-      } = query;
+      const { restaurantId, status, amount, page = 1, limit = 10 } = query;
       const pageNumber = Number(page) || 1;
       const limitNumber = Number(limit) || 10;
       const where: any = {};
 
       if (restaurantId) where.restaurantId = Number(restaurantId);
       if (status) where.status = status;
-      if (amount) where.amount = amount;
+      if (amount) where.amount = Number(amount);
 
       const [data, total] = await Promise.all([
         this.prisma.withdraw.findMany({
