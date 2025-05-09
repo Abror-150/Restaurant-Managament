@@ -94,8 +94,9 @@ model Product {
 
 model Order {
   id    Int @id @default(autoincrement())
-  table Int
+  table String
   total Int
+  status OrderStatus @default(PENDING)
 
   Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   restaurantId Int
@@ -104,6 +105,10 @@ model Order {
   userId Int
 
   orderItems OrderItems[]
+}
+enum OrderStatus{
+ PENDING
+ PAID
 }
 
 model OrderItems {

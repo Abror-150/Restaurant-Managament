@@ -7,6 +7,7 @@ import {
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RestaurantQueryDto } from './dto/create-restaurant.dto copy';
 
 @Injectable()
 export class RestaurantService {
@@ -35,9 +36,43 @@ export class RestaurantService {
     }
   }
 
-  async findAll() {
+  async findAll(query: RestaurantQueryDto) {
     try {
-      return await this.prisma.restaurant.findMany();
+      const { name, isActive, regionId } = query;
+      const page = Number(query.page) || 1;
+      const limit = Number(query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const where: any = {};
+
+      if (name) {
+        where.name = { contains: name, mode: 'insensitive' };
+      }
+
+      if (isActive === 'true') {
+        where.isActive = true;
+      } else if (isActive === 'false') {
+        where.isActive = false;
+      }
+
+      if (regionId) {
+        where.regionId = Number(regionId);
+      }
+
+      const data = await this.prisma.restaurant.findMany({
+        where,
+        skip,
+        take: limit,
+      });
+
+      const total = await this.prisma.restaurant.count({ where });
+
+      return {
+        data,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      };
     } catch (error) {
       throw new InternalServerErrorException('Failed to fetch restaurants');
     }
@@ -47,6 +82,13 @@ export class RestaurantService {
     try {
       const restaurant = await this.prisma.restaurant.findFirst({
         where: { id },
+        include: {
+          categories: true,
+          products: true,
+          orders: true,
+          users: true,
+          Region: true,
+        },
       });
 
       if (!restaurant) {
