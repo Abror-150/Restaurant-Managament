@@ -74,6 +74,13 @@ export class DebtService {
   async update(id: number, data: UpdateDebtDto) {
     try {
       const one = await this.prisma.debt.update({where: {id}, data})
+      if(data.status === "PAID"){
+        await this.prisma.restaurant.update({where: {id: data.restaurantId}, data: {
+          income: {
+            increment: data.amount
+          }
+        }})
+      }
       return one
     } catch (error) {
       throw new BadRequestException("Error debt update")

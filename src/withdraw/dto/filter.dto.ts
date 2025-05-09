@@ -5,8 +5,6 @@ export class filterWithdrawDto {
     @IsOptional()
     amount?: number
 
-    @IsOptional()
-    userId?: number
   
     @IsOptional()
     status?:  WithdrawStatus

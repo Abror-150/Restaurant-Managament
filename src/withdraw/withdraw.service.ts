@@ -14,12 +14,6 @@ export class WithdrawService {
 
   async create(data: CreateWithdrawDto) {
     try {
-      const existUser = await this.prisma.user.findFirst({
-        where: { id: data.userId },
-      });
-      if (!existUser) {
-        return { message: 'Please write user that exists' };
-      }
 
       const existRestaurant = await this.prisma.restaurant.findFirst({
         where: { id: data.restaurantId },
@@ -58,7 +52,6 @@ export class WithdrawService {
   async findAll(query: filterWithdrawDto) {
     try {
       const {
-        userId,
         restaurantId,
         status,
         amount,
@@ -69,7 +62,6 @@ export class WithdrawService {
       const limitNumber = Number(limit) || 10;
       const where: any = {};
 
-      if (userId) where.userId = userId;
       if (restaurantId) where.restaurantId = Number(restaurantId);
       if (status) where.status = status;
       if (amount) where.amount = amount;

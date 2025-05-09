@@ -11,11 +11,6 @@ export class CreateWithdrawDto {
     @ApiProperty({example: 1})
     @IsNumber()
     @IsNotEmpty()
-    userId: number
-
-    @ApiProperty({example: 1})
-    @IsNumber()
-    @IsNotEmpty()
     restaurantId: number
 
     @ApiProperty({example: "INCOME"})
