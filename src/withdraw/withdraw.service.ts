@@ -22,6 +22,20 @@ export class WithdrawService {
       }
 
       const one = await this.prisma.withdraw.create({data})
+
+      if(data.status === "INCOME"){
+        await this.prisma.restaurant.update({where: {id: data.restaurantId}, data: {
+          income: {
+            increment: Number(data.amount)
+          }
+        }})
+      }else if(data.status === "OUTCOME"){
+        await this.prisma.restaurant.update({where: {id: data.restaurantId}, data: {
+          outcome: {
+            increment: Number(data.amount)
+          }
+        }})
+      }
       return one
     } catch (error) {
       throw new BadRequestException("withdraw create error")
@@ -34,19 +48,19 @@ export class WithdrawService {
       const pageNumber = Number(page) || 1;
       const limitNumber = Number(limit) || 10;
       const where: any = {};
-      
+
       if (userId) where.userId = userId;
       if (restaurantId) where.restaurantId = Number(restaurantId);
       if (status) where.status = status;
       if (amount) where.amount = amount;
 
       const [data, total] = await Promise.all([
-        this.prisma.order.findMany({
+        this.prisma.withdraw.findMany({
           where,
           skip: (pageNumber - 1) * limit,
           take: limitNumber,
         }),
-        this.prisma.order.count({ where }),
+        this.prisma.withdraw.count({ where }),
       ]);
 
       return {

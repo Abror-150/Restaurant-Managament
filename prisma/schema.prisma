@@ -59,6 +59,9 @@ model Restaurant {
   debts Debt[]
 
   withdraws Withdraw[]
+
+  income Int @default(0)
+  outcome Int @default(0)
 }
 
 model Region {
