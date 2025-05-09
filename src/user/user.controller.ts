@@ -81,17 +81,25 @@ export class UserController {
   findAll(@Query() query: any) {
     return this.userService.findAll(query);
   }
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get('top-earners')
   async getTopWaiters(
     @Query('restaurantId', ParseIntPipe) restaurantId: number,
   ) {
     return this.userService.getTopWaiters(restaurantId);
   }
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get('waiter-stats')
   async getWaiterStats() {
     return await this.userService.waiterOrderStats();
   }
-
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.userService.findOne(+id);

@@ -38,7 +38,9 @@ export class ProductController {
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
-
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.CASSER)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get('top-products/:restaurantId')
   async getTopProducts(
     @Param('restaurantId', ParseIntPipe) restaurantId: number,
