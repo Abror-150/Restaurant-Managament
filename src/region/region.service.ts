@@ -75,6 +75,9 @@ export class RegionService {
   async findOne(id: number) {
     try {
       const one = await this.prisma.region.findFirst({ where: { id } });
+      if (!one) {
+        return { message: 'region not found' };
+      }
       return one;
     } catch (error) {
       throw new BadRequestException('Region findone error');

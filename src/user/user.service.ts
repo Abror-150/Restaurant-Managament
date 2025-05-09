@@ -37,6 +37,12 @@ export class UserService {
       if (!existRestaurant) {
         return { message: 'Please write restaurant that exists' };
       }
+      let user = await this.prisma.user.findFirst({
+        where: { phone: data.phone },
+      });
+      if (user) {
+        return { message: 'phone already exists' };
+      }
       let hash = bcrypt.hashSync(data.password, 10);
       const created = await this.prisma.user.create({
         data: {

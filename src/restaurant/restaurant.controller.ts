@@ -67,6 +67,16 @@ export class RestaurantController {
     return this.restaurantService.findAll(query);
   }
 
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
+  @Get(':restaurantId/total-income')
+  async getTotalIncome(@Param('restaurantId') restaurantId: number) {
+    const totalIncome =
+      await this.restaurantService.calculateTotalIncome(restaurantId);
+    return { totalIncome };
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.restaurantService.findOne(+id);

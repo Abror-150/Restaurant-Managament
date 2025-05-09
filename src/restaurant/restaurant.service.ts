@@ -8,6 +8,7 @@ import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RestaurantQueryDto } from './dto/create-restaurant.dto copy';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class RestaurantService {
@@ -34,6 +35,32 @@ export class RestaurantService {
     } catch (error) {
       throw new InternalServerErrorException('Failed to create restaurant');
     }
+  }
+
+  async calculateTotalIncome(restaurantId: number): Promise<number> {
+    const incomeFromOrders = await this.prisma.order.aggregate({
+      _sum: { total: true },
+      where: {
+        restaurantId: Number(restaurantId),
+        status: OrderStatus.PAID,
+      },
+    });
+
+    const incomeFromWithdraw = await this.prisma.withdraw.aggregate({
+      _sum: { amount: true },
+      where: {
+        restaurantId: Number(restaurantId),
+        status: 'INCOME',
+      },
+    });
+
+    const totalOrderIncome = incomeFromOrders._sum.total || 0;
+
+    const totalWithdrawIncome = incomeFromWithdraw._sum.amount || 0;
+
+    const totalIncome = totalOrderIncome + totalWithdrawIncome;
+
+    return totalIncome;
   }
 
   async findAll(query: RestaurantQueryDto) {
