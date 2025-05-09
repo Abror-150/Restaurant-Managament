@@ -45,7 +45,7 @@ export class DebtService {
           skip: (pageNumber - 1) * limit,
           take: limitNumber,
         }),
-        this.prisma.order.count({ where }),
+        this.prisma.debt.count({ where }),
       ]);
 
       return {
