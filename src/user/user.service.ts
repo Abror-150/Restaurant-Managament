@@ -60,7 +60,7 @@ export class UserService {
         where: { phone: data.phone },
       });
       if (!user) {
-        return { message: 'user not found' };
+        return { message: 'phone number incorrect' };
       }
 
       let match = bcrypt.compareSync(data.password, user.password);
